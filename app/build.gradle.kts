@@ -56,6 +56,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
 
     implementation(libs.googleid)
     testImplementation(libs.junit)
@@ -73,4 +74,6 @@ dependencies {
     implementation(libs.navigation.compose)
     implementation(libs.coroutines.play.services)
 
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.material.icons.extended)
 }

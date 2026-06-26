@@ -13,3 +13,10 @@
 .externalNativeBuild
 .cxx
 local.properties
+# Firebase
+google-services.json
+# Signing
+*.jks
+*.keystore
+key.properties
+keystore.properties
