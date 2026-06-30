@@ -1,5 +1,7 @@
 package com.abbas57.stockframe.ui.product
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,8 +18,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.abbas57.stockframe.domain.model.Product
 import com.abbas57.stockframe.domain.model.ProductListItem
 import com.abbas57.stockframe.domain.model.ProductListUiData
@@ -177,17 +184,43 @@ private fun ProductCard(item: ProductListItem, onClick: () -> Unit) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Neutral0)
+        colors = CardDefaults.cardColors(containerColor = Neutral0),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(modifier = Modifier.padding(16.dp)) {
-            // Placeholder box, no Coil/image-loading call here — see the
-            // note accompanying this delivery about adding an image
-            // library before this can actually render product.imageUrl.
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(Neutral100, RoundedCornerShape(8.dp))
-            )
+            // Image thumbnail — three states:
+            // 1. imageUrl is null (product has no image) → grey placeholder
+            // 2. imageUrl exists but not loaded yet → same grey placeholder
+            //    (Coil handles the in-between state automatically via
+            //    placeholder/error params — no spinner needed at this size)
+            // 3. imageUrl loaded → the actual product photo
+            if (product.imageUrl != null) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(product.imageUrl)
+                        .crossfade(true)
+                        // Shows the grey box while loading instead of
+                        // a blank gap — same visual treatment as
+                        // the no-image state, so the list doesn't
+                        // jump/reflow when images arrive.
+                        .placeholder(ColorDrawable(Color.parseColor("#F1EFE8")))
+                        .error(ColorDrawable(android.graphics.Color.parseColor("#F1EFE8")))
+                        .build(),
+                    contentDescription = product.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            } else {
+                // No image set — show a neutral placeholder that
+                // matches the card surface, not a broken-image icon.
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .background(Neutral100, RoundedCornerShape(8.dp))
+                )
+            }
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(product.name, style = MaterialTheme.typography.titleLarge)

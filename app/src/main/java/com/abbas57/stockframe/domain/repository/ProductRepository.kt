@@ -2,6 +2,7 @@ package com.abbas57.stockframe.domain.repository
 
 import com.abbas57.stockframe.domain.model.Product
 import kotlinx.coroutines.flow.Flow
+import java.io.File
 
 /**
  * Contract for all product CRUD + reads. Same rule as AuthRepository:
@@ -40,7 +41,7 @@ interface ProductRepository {
      * inventory_transactions record — there's no "previous quantity" to
      * adjust from on creation, so there's nothing meaningful to log yet.
      */
-    suspend fun addProduct(product: Product, localImageUri: String?): Result<Product>
+//    suspend fun addProduct(product: Product, localImageUri: String?): Result<Product>
 
     /**
      * Updates an existing product, INCLUDING quantity (per the decision
@@ -55,11 +56,15 @@ interface ProductRepository {
      * the implementation must leave the existing imageUrl untouched in
      * that case, not null it out.
      */
-    suspend fun updateProduct(
-        product: Product,
-        previousQuantity: Int,
-        newLocalImageUri: String?
-    ): Result<Unit>
+//    suspend fun updateProduct(
+//        product: Product,
+//        previousQuantity: Int,
+//        newLocalImageUri: String?
+//    ): Result<Unit>
+    /** localImageFile is a real File on disk (app cache), not a content URI — see AddEditProductViewModel for the Uri-to-File conversion this requires upstream. */
+    suspend fun addProduct(product: Product, localImageFile: File?): Result<Product>
+
+    suspend fun updateProduct(product: Product, previousQuantity: Int, newLocalImageFile: File?): Result<Unit>
 
     /**
      * Soft delete only — flips isActive to false, never issues a Firestore

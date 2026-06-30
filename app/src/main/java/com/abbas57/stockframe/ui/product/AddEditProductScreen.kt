@@ -32,6 +32,8 @@ import com.abbas57.stockframe.ui.theme.*
  * is null for Add; passing a real ID switches the ViewModel into edit
  * mode via loadProductForEdit, called exactly once via LaunchedEffect.
  */
+
+
 @Composable
 fun AddEditProductScreen(
     productId: String?,
@@ -46,6 +48,20 @@ fun AddEditProductScreen(
     LaunchedEffect(productId) {
         if (productId != null) viewModel.loadProductForEdit(productId)
     }
+    val context = androidx.compose.ui.platform.LocalContext.current
+//    val imagePickerLauncher = rememberLauncherForActivityResult(
+//        contract = ActivityResultContracts.PickVisualMedia()
+//    ) { uri ->
+//        // PickVisualMedia returns null if the user backs out of the picker
+//        // without choosing anything — that's a normal cancel, not an error,
+//        // so it's silently ignored rather than surfaced as a failure.
+//        if (uri != null) viewModel.onImagePicked(uri.toString())
+//    }
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) viewModel.onImagePicked(uri, context)
+    }
 
     // Fires onSaveComplete exactly once per successful save, same
     // LaunchedEffect-keyed-on-state pattern as Login/Register reacting to
@@ -54,14 +70,7 @@ fun AddEditProductScreen(
         if (saveState is UiState.Success) onSaveComplete()
     }
 
-    val imagePickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
-        // PickVisualMedia returns null if the user backs out of the picker
-        // without choosing anything — that's a normal cancel, not an error,
-        // so it's silently ignored rather than surfaced as a failure.
-        if (uri != null) viewModel.onImagePicked(uri.toString())
-    }
+
 
     if (form.isLoadingExisting) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -178,7 +187,7 @@ fun AddEditProductScreen(
             Text("Product image", style = MaterialTheme.typography.bodyMedium, color = Neutral700)
             Spacer(Modifier.height(8.dp))
 
-            val displayImage = form.localImageUri ?: form.existingImageUrl
+            val displayImage = form.localImagePreviewUri ?: form.existingImageUrl
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

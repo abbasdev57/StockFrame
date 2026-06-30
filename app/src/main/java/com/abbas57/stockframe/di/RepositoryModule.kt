@@ -3,9 +3,11 @@ package com.abbas57.stockframe.di
 
 import com.abbas57.stockframe.data.repository.AuthRepositoryImpl
 import com.abbas57.stockframe.data.repository.CategoryRepositoryImpl
+import com.abbas57.stockframe.data.repository.InventoryTransactionRepositoryImpl
 import com.abbas57.stockframe.data.repository.ProductRepositoryImpl
 import com.abbas57.stockframe.domain.repository.AuthRepository
 import com.abbas57.stockframe.domain.repository.CategoryRepository
+import com.abbas57.stockframe.domain.repository.InventoryTransactionRepository
 import com.abbas57.stockframe.domain.repository.ProductRepository
 import dagger.Binds
 import dagger.Module
@@ -35,4 +37,9 @@ abstract class RepositoryModule {
 
     @Binds
     abstract fun bindCategoryRepository(impl: CategoryRepositoryImpl): CategoryRepository
+
+    @Binds
+    abstract fun bindInventoryTransactionRepository(
+        impl: InventoryTransactionRepositoryImpl
+    ): InventoryTransactionRepository
 }

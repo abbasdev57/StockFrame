@@ -57,4 +57,9 @@ sealed interface NavigationDestination {
         fun createRoute(productId: String) = "product_detail/$productId"
     }
 
+    object StockAdjustment : NavigationDestination {
+        override val route = "stock_adjustment/{productId}"
+        fun createRoute(productId: String) = "stock_adjustment/$productId"
+    }
+
 }

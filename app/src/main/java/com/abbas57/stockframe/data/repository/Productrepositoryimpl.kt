@@ -1,6 +1,7 @@
 package com.abbas57.stockframe.data.repository
 
 import android.net.Uri
+import com.abbas57.stockframe.data.remote.CloudinaryUploadService
 import com.abbas57.stockframe.domain.model.Product
 import com.abbas57.stockframe.domain.repository.ProductRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -22,7 +23,8 @@ private const val PRODUCT_IMAGES_PATH = "product_images"
 @Singleton
 class ProductRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val storage: FirebaseStorage,
+//    private val storage: FirebaseStorage,
+    private val cloudinaryUploadService: CloudinaryUploadService,   // replaces FirebaseStorage,
     private val firebaseAuth: FirebaseAuth
 ) : ProductRepository {
 
@@ -59,12 +61,12 @@ class ProductRepositoryImpl @Inject constructor(
         Result.failure(e)
     }
 
-    override suspend fun addProduct(product: Product, localImageUri: String?): Result<Product> = try {
+    override suspend fun addProduct(product: Product, localImageFile: java.io.File?): Result<Product> = try {
         val ownerId = requireOwnerId()
         val docRef = firestore.collection(PRODUCTS_COLLECTION).document()
         val now = System.currentTimeMillis()
 
-        val imageUrl = localImageUri?.let { uploadProductImage(docRef.id, it) }
+        val imageUrl = localImageFile?.let { cloudinaryUploadService.uploadImage(it) }
 
         val finalProduct = product.copy(
             id = docRef.id,
@@ -83,38 +85,22 @@ class ProductRepositoryImpl @Inject constructor(
     override suspend fun updateProduct(
         product: Product,
         previousQuantity: Int,
-        newLocalImageUri: String?
+        newLocalImageFile: java.io.File?
     ): Result<Unit> = try {
-        val imageUrl = newLocalImageUri?.let { uploadProductImage(product.id, it) } ?: product.imageUrl
+        val imageUrl = newLocalImageFile?.let { cloudinaryUploadService.uploadImage(it) } ?: product.imageUrl
         val updated = product.copy(imageUrl = imageUrl, updatedAt = System.currentTimeMillis())
         val quantityDelta = updated.quantity - previousQuantity
 
-        // firestore.runTransaction guarantees the product write and the
-        // transaction-log write succeed or fail together — exactly the
-        // same atomicity guarantee Sprint 3's Stock Adjustment screen
-        // will rely on. Without this, a crash or network drop between
-        // two separate .set() calls could update quantity with no
-        // matching log entry, or vice versa.
         firestore.runTransaction { txn ->
-            txn.set(
-                firestore.collection(PRODUCTS_COLLECTION).document(updated.id),
-                updated.toFirestoreMap()
-            )
-
-            // Only log a real change. A no-op save (user opened Edit,
-            // changed the name, left quantity untouched) must NOT create
-            // a misleading "Adjustment: +0" entry in the product's history.
+            txn.set(firestore.collection(PRODUCTS_COLLECTION).document(updated.id), updated.toFirestoreMap())
             if (quantityDelta != 0) {
                 val txnRef = firestore.collection(TRANSACTIONS_COLLECTION).document()
                 txn.set(
                     txnRef,
                     mapOf(
-                        "productId" to updated.id,
-                        "ownerId" to updated.ownerId,
-                        "type" to "ADJUSTMENT",
-                        "quantity" to quantityDelta,
-                        "reason" to "Manual correction via product edit",
-                        "note" to null,
+                        "productId" to updated.id, "ownerId" to updated.ownerId,
+                        "type" to "ADJUSTMENT", "quantity" to quantityDelta,
+                        "reason" to "Manual correction via product edit", "note" to null,
                         "createdAt" to System.currentTimeMillis()
                     )
                 )
@@ -135,11 +121,11 @@ class ProductRepositoryImpl @Inject constructor(
         Result.failure(e)
     }
 
-    private suspend fun uploadProductImage(productId: String, localUri: String): String {
-        val ref = storage.reference.child("$PRODUCT_IMAGES_PATH/${requireOwnerId()}/$productId.jpg")
-        ref.putFile(Uri.parse(localUri)).await()
-        return ref.downloadUrl.await().toString()
-    }
+//    private suspend fun uploadProductImage(productId: String, localUri: String): String {
+//        val ref = storage.reference.child("$PRODUCT_IMAGES_PATH/${requireOwnerId()}/$productId.jpg")
+//        ref.putFile(Uri.parse(localUri)).await()
+//        return ref.downloadUrl.await().toString()
+//    }
 
     private fun DocumentSnapshot.toProductOrNull(): Product? = try {
         Product(
