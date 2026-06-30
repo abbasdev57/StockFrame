@@ -41,13 +41,6 @@ class CategoryRepositoryImpl @Inject constructor(
         awaitClose { registration.remove() }
     }
 
-    override suspend fun getCategoriesOnce(): Result<List<Category>> = try {
-        val snapshot = baseQuery().get().await()
-        Result.success(snapshot.documents.mapNotNull { it.toCategoryOrNull() })
-    } catch (e: Exception) {
-        Result.failure(e)
-    }
-
     override suspend fun addCategory(name: String): Result<Category> = try {
         val docRef = firestore.collection(CATEGORIES_COLLECTION).document()
         val category = Category(
@@ -57,11 +50,7 @@ class CategoryRepositoryImpl @Inject constructor(
             createdAt = System.currentTimeMillis()
         )
         docRef.set(
-            mapOf(
-                "name" to category.name,
-                "ownerId" to category.ownerId,
-                "createdAt" to category.createdAt
-            )
+            mapOf("name" to category.name, "ownerId" to category.ownerId, "createdAt" to category.createdAt)
         ).await()
         Result.success(category)
     } catch (e: Exception) {

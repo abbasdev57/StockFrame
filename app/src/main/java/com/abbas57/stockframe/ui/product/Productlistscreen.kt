@@ -14,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -22,18 +23,18 @@ import com.abbas57.stockframe.domain.model.ProductListItem
 import com.abbas57.stockframe.domain.model.ProductListUiData
 import com.abbas57.stockframe.domain.model.StockStatus
 import com.abbas57.stockframe.ui.common.UiState
-import com.abbas57.stockframe.ui.products.ProductListViewModel
 import com.abbas57.stockframe.ui.theme.*
 
 @Composable
 fun ProductListScreen(
     onProductClick: (productId: String) -> Unit,
     onAddProductClick: () -> Unit,
-    viewModel: ProductListViewModel = hiltViewModel()
+    viewModel: ProductListViewModel = hiltViewModel(),
+    contentPadding: PaddingValues
 ) {
     val state by viewModel.uiState.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
         when (val current = state) {
             is UiState.Loading, is UiState.Idle -> {
                 // Listener hasn't emitted yet (first launch, cold start).
@@ -65,7 +66,7 @@ fun ProductListScreen(
 
         FloatingActionButton(
             onClick = onAddProductClick,
-            modifier = Modifier.align(androidx.compose.ui.Alignment.BottomEnd).padding(24.dp),
+            modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp),
             containerColor = Blue400,
             contentColor = Neutral0
         ) {
