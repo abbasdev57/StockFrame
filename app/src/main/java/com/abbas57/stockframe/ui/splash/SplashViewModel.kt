@@ -5,6 +5,8 @@ package com.abbas57.stockframe.ui.splash
 import androidx.lifecycle.ViewModel
 import com.abbas57.stockframe.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.time.delay
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,5 +25,9 @@ class SplashViewModel @Inject constructor(
      * for the whole app, so the routing decision should live in exactly
      * one place.
      */
-    fun hasLoggedInUser(): Boolean = authRepository.getCurrentUser() != null
+//    fun hasLoggedInUser(): Boolean = authRepository.getCurrentUser() != null
+    suspend fun hasLoggedInUser(): Boolean {
+        delay(1000)
+        return authRepository.getCurrentUser() != null
+    }
 }

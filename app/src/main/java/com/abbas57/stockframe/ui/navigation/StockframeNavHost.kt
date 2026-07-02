@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import com.abbas57.stockframe.ui.dashboard.DashboardScreen
 import com.abbas57.stockframe.ui.history.HistoryScreen
 import com.abbas57.stockframe.ui.product.ProductListScreen
+import com.abbas57.stockframe.ui.settings.SettingsScreen
 import com.abbas57.stockframe.ui.stock.StockAdjustmentScreen
 
 @Composable
@@ -124,8 +125,19 @@ fun StockframeNavHost(navController: NavHostController = rememberNavController()
 
 
         composable(NavigationDestination.Settings.route) {
-            StockframeScaffold(navController) {
-                Box { Text("Settings placeholder") }
+            StockframeScaffold(navController) { padding ->
+                SettingsScreen(
+                    contentPadding = padding,
+                    onLoggedOut = {
+                        navController.navigate(NavigationDestination.Login.route) {
+                            // Clears EVERYTHING below Login, including Dashboard
+                            // and all its sibling tabs — without this, Back from
+                            // Login could navigate into screens that now have no
+                            // valid signed-in user behind them.
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
             }
         }
 

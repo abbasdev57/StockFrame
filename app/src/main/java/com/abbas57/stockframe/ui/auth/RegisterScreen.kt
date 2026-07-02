@@ -1,17 +1,25 @@
 package com.abbas57.stockframe.ui.auth
 
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.abbas57.stockframe.ui.common.UiState
-
+import com.abbas57.stockframe.R
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
@@ -23,7 +31,8 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
-
+    var passwordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
     LaunchedEffect(uiState) {
         if (uiState is UiState.Success<*>) onRegisterSuccess()
     }
@@ -39,6 +48,25 @@ fun RegisterScreen(
             .verticalScroll(rememberScrollState())
             .padding(24.dp)
     ) {
+        Spacer(modifier = Modifier.height(12.dp))
+        Image(
+            painter = painterResource(R.drawable.ic_launcher_foreground),
+            contentDescription = "App Logo",
+            modifier = Modifier
+                .size(80.dp)
+                .align(Alignment.CenterHorizontally),
+            contentScale = ContentScale.Fit
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Text(
+            text = "StockFrame",
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+
+        Spacer(modifier = Modifier.height(32.dp))
         Text("Create your account", style = MaterialTheme.typography.headlineSmall)
         Text(
             "Start managing your inventory today.",
@@ -70,7 +98,26 @@ fun RegisterScreen(
             onValueChange = { password = it },
             label = { Text("Password") },
             singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisible)
+                VisualTransformation.None
+            else
+                PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(
+                    onClick = { passwordVisible = !passwordVisible }
+                ) {
+                    Icon(
+                        imageVector = if (passwordVisible)
+                            Icons.Default.Visibility
+                        else
+                            Icons.Default.VisibilityOff,
+                        contentDescription = if (passwordVisible)
+                            "Hide password"
+                        else
+                            "Show password"
+                    )
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(12.dp))

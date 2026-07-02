@@ -30,5 +30,21 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+    fun provideFirestore(): FirebaseFirestore {
+        val firestore = FirebaseFirestore.getInstance()
+        // Explicit, not just relying on the (already-on) default. Setting an
+        // unlimited cache size here is a deliberate V1 choice — Stockframe's
+        // data volume (one owner's products + transactions) will never
+        // realistically approach a size where this matters, so there's no
+        // reason to impose Firestore's smaller default cache limit and risk
+        // older offline data getting evicted.
+        firestore.firestoreSettings = com.google.firebase.firestore.FirebaseFirestoreSettings.Builder()
+            .setLocalCacheSettings(
+                com.google.firebase.firestore.PersistentCacheSettings.newBuilder()
+                    .setSizeBytes(com.google.firebase.firestore.FirebaseFirestoreSettings.CACHE_SIZE_UNLIMITED)
+                    .build()
+            )
+            .build()
+        return firestore
+    }
 }
